@@ -31,9 +31,27 @@ sendButton.addEventListener("click", async () => {
     });
 
     if (response && response.pageText) {
-      // TODO: Send to AI service and get response
-      // For now, just show a placeholder response
-      addMessage("I've received your question and the page content. AI integration coming soon!");
+      // Send to backend and wait for response
+      const backendResponse = await new Promise((resolve) => {
+        chrome.runtime.sendMessage(
+          { 
+            type: "ASK_BACKEND", 
+            question: userQuestion, 
+            context: response.pageText 
+          },
+          resolve
+        );
+      });
+
+      console.log("Backend response:", backendResponse);
+
+      if (backendResponse && backendResponse.answer) {
+        addMessage(backendResponse.answer);
+      } else if (backendResponse && backendResponse.error) {
+        addMessage(backendResponse.error);
+      } else {
+        addMessage("Sorry, I couldn't get a response from the AI. Please try again.");
+      }
     } else {
       addMessage("Sorry, I couldn't read the page content. Please try again.");
     }
