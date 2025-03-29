@@ -14,8 +14,8 @@ try {
       const article = new Readability(document.cloneNode(true)).parse();
 
       const cleanedText = article && article.content
-        ? stripHtml(article.content).slice(0, 2000)
-        : document.body.innerText.slice(0, 2000);
+        ? stripHtml(article.content)
+        : document.body.innerText;
       console.log("[ChatWithWebAI] Page text extracted:", cleanedText.substring(0, 100) + "...");
       sendResponse({ pageText: cleanedText });
     }
