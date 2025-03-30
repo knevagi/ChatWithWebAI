@@ -3,10 +3,7 @@
     "name": "ChatWithWebAI",
     "version": "1.0",
     "permissions": ["scripting", "activeTab", "storage"],
-    "host_permissions": [
-      "<all_urls>",
-      "http://172.19.96.1:8000/*"
-    ],
+    "host_permissions": ["<all_urls>"],
     "action": {
       "default_popup": "popup.html",
       "default_icon": "icons/ChatWithWebUI.png"
