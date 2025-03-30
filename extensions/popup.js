@@ -2,6 +2,12 @@
 const messagesContainer = document.getElementById("messages");
 const userInput = document.getElementById("userInput");
 const sendButton = document.getElementById("sendBtn");
+const settingsButton = document.getElementById("settingsBtn");
+
+// Handle settings button click
+settingsButton.addEventListener("click", () => {
+  window.location.href = "settings.html";
+});
 
 // Add message to chat
 function addMessage(text, isUser = false) {

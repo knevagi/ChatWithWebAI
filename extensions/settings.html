@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="popup.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div class="chat-container">
+      <div class="chat-header">
+        <h1>Settings</h1>
+        <button id="backBtn" class="back-button">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="settings-container">
+        <form id="settingsForm">
+          <div class="form-group">
+            <label for="modelSelect">AI Model</label>
+            <select id="modelSelect" class="model-select">
+              <option value="openai">OpenAI GPT-4</option>
+              <option value="claude">Anthropic Claude</option>
+              <option value="gemini">Google Gemini</option>
+            </select>
+          </div>
+
+          <div class="form-group api-key-group" id="openaiKeyGroup">
+            <label for="openaiKey">OpenAI API Key</label>
+            <div class="input-group">
+              <input type="password" id="openaiKey" placeholder="Enter your OpenAI API key">
+              <button type="button" class="toggle-password" data-target="openaiKey">
+                <svg class="eyeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 5C7.45455 5 3.57273 7.90909 1 12C3.57273 16.0909 7.45455 19 12 19C16.5455 19 20.4273 16.0909 23 12C20.4273 7.90909 16.5455 5 12 5ZM12 16.3636C10.1455 16.3636 8.63636 14.8545 8.63636 13C8.63636 11.1455 10.1455 9.63636 12 9.63636C13.8545 9.63636 15.3636 11.1455 15.3636 13C15.3636 14.8545 13.8545 16.3636 12 16.3636ZM12 11.1818C11.1455 11.1818 10.4545 11.8727 10.4545 12.7273C10.4545 13.5818 11.1455 14.2727 12 14.2727C12.8545 14.2727 13.5455 13.5818 13.5455 12.7273C13.5455 11.8727 12.8545 11.1818 12 11.1818Z" fill="currentColor"/>
+                </svg>
+                <svg class="eyeOffIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                  <path d="M12 5C7.45455 5 3.57273 7.90909 1 12C3.57273 16.0909 7.45455 19 12 19C16.5455 19 20.4273 16.0909 23 12C20.4273 7.90909 16.5455 5 12 5ZM12 16.3636C10.1455 16.3636 8.63636 14.8545 8.63636 13C8.63636 11.1455 10.1455 9.63636 12 9.63636C13.8545 9.63636 15.3636 11.1455 15.3636 13C15.3636 14.8545 13.8545 16.3636 12 16.3636Z" fill="currentColor"/>
+                </svg>
+              </button>
+            </div>
+            <p class="input-description">Your OpenAI API key is stored locally and only used for OpenAI requests.</p>
+          </div>
+
+          <div class="form-group api-key-group" id="claudeKeyGroup" style="display: none;">
+            <label for="claudeKey">Anthropic API Key</label>
+            <div class="input-group">
+              <input type="password" id="claudeKey" placeholder="Enter your Anthropic API key">
+              <button type="button" class="toggle-password" data-target="claudeKey">
+                <svg class="eyeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 5C7.45455 5 3.57273 7.90909 1 12C3.57273 16.0909 7.45455 19 12 19C16.5455 19 20.4273 16.0909 23 12C20.4273 7.90909 16.5455 5 12 5ZM12 16.3636C10.1455 16.3636 8.63636 14.8545 8.63636 13C8.63636 11.1455 10.1455 9.63636 12 9.63636C13.8545 9.63636 15.3636 11.1455 15.3636 13C15.3636 14.8545 13.8545 16.3636 12 16.3636ZM12 11.1818C11.1455 11.1818 10.4545 11.8727 10.4545 12.7273C10.4545 13.5818 11.1455 14.2727 12 14.2727C12.8545 14.2727 13.5455 13.5818 13.5455 12.7273C13.5455 11.8727 12.8545 11.1818 12 11.1818Z" fill="currentColor"/>
+                </svg>
+                <svg class="eyeOffIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                  <path d="M12 5C7.45455 5 3.57273 7.90909 1 12C3.57273 16.0909 7.45455 19 12 19C16.5455 19 20.4273 16.0909 23 12C20.4273 7.90909 16.5455 5 12 5ZM12 16.3636C10.1455 16.3636 8.63636 14.8545 8.63636 13C8.63636 11.1455 10.1455 9.63636 12 9.63636C13.8545 9.63636 15.3636 11.1455 15.3636 13C15.3636 14.8545 13.8545 16.3636 12 16.3636Z" fill="currentColor"/>
+                </svg>
+              </button>
+            </div>
+            <p class="input-description">Your Anthropic API key is stored locally and only used for Claude requests.</p>
+          </div>
+
+          <div class="form-group api-key-group" id="geminiKeyGroup" style="display: none;">
+            <label for="geminiKey">Google API Key</label>
+            <div class="input-group">
+              <input type="password" id="geminiKey" placeholder="Enter your Google API key">
+              <button type="button" class="toggle-password" data-target="geminiKey">
+                <svg class="eyeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 5C7.45455 5 3.57273 7.90909 1 12C3.57273 16.0909 7.45455 19 12 19C16.5455 19 20.4273 16.0909 23 12C20.4273 7.90909 16.5455 5 12 5ZM12 16.3636C10.1455 16.3636 8.63636 14.8545 8.63636 13C8.63636 11.1455 10.1455 9.63636 12 9.63636C13.8545 9.63636 15.3636 11.1455 15.3636 13C15.3636 14.8545 13.8545 16.3636 12 16.3636ZM12 11.1818C11.1455 11.1818 10.4545 11.8727 10.4545 12.7273C10.4545 13.5818 11.1455 14.2727 12 14.2727C12.8545 14.2727 13.5455 13.5818 13.5455 12.7273C13.5455 11.8727 12.8545 11.1818 12 11.1818Z" fill="currentColor"/>
+                </svg>
+                <svg class="eyeOffIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: none;">
+                  <path d="M12 5C7.45455 5 3.57273 7.90909 1 12C3.57273 16.0909 7.45455 19 12 19C16.5455 19 20.4273 16.0909 23 12C20.4273 7.90909 16.5455 5 12 5ZM12 16.3636C10.1455 16.3636 8.63636 14.8545 8.63636 13C8.63636 11.1455 10.1455 9.63636 12 9.63636C13.8545 9.63636 15.3636 11.1455 15.3636 13C15.3636 14.8545 13.8545 16.3636 12 16.3636Z" fill="currentColor"/>
+                </svg>
+              </button>
+            </div>
+            <p class="input-description">Your Google API key is stored locally and only used for Gemini requests.</p>
+          </div>
+
+          <button type="submit" class="save-button">Save Settings</button>
+        </form>
+      </div>
+    </div>
+    <script src="settings.js"></script>
+  </body>
+</html> 
