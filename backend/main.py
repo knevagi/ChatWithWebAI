@@ -1,5 +1,4 @@
-from fastapi import FastAPI, HTTPException, Security, Depends
-from fastapi.security.api_key import APIKeyHeader
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from pydantic import BaseModel
@@ -8,6 +7,8 @@ from typing import List, Optional
 from dotenv import load_dotenv
 from langsmith import traceable
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_anthropic import ChatAnthropic
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import ChatPromptTemplate
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import FAISS
@@ -15,40 +16,15 @@ from langchain.schema import Document
 
 app = FastAPI()
 load_dotenv()
-
-# API Key security
-API_KEY = os.getenv('API_KEY', 'your-secret-api-key-here')  # Set this in your .env file
-api_key_header = APIKeyHeader(name="X-API-Key")
-
-async def get_api_key(api_key: str = Security(api_key_header)):
-    if api_key != API_KEY:
-        raise HTTPException(
-            status_code=403,
-            detail="Invalid API Key"
-        )
-    return api_key
-
-# CORS middleware with specific origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["chrome-extension://*"],  # Only allow Chrome extensions
-    allow_methods=["POST"],  # Only allow POST requests
+    allow_origins=["*"],
+    allow_methods=["*"],
     allow_headers=["*"],
 )
-
 os.environ["LANGCHAIN_TRACING_V2"] = "true"
 os.environ["LANGCHAIN_API_KEY"] = os.getenv('LANGSMITH_API_KEY')
 os.environ["LANGCHAIN_PROJECT"] = "AIWEBCHAT"
-
-# Initialize LangChain components
-llm = ChatOpenAI(
-    model_name="gpt-4o",
-    temperature=0.7,
-    api_key=os.getenv('OPENAI_API_KEY')
-)
-
-# Initialize embeddings
-embeddings = OpenAIEmbeddings(api_key=os.getenv('OPENAI_API_KEY'))
 
 # Create a prompt template
 prompt_template = ChatPromptTemplate.from_messages([
@@ -57,9 +33,6 @@ prompt_template = ChatPromptTemplate.from_messages([
     Keep your answers concise and relevant to the question."""),
     ("human", "Context: {context}\n\nQuestion: {question}")
 ])
-
-# Create the chain using RunnableSequence
-chain = prompt_template | llm
 
 # Initialize text splitter
 text_splitter = RecursiveCharacterTextSplitter(
@@ -71,14 +44,47 @@ text_splitter = RecursiveCharacterTextSplitter(
 class RequestBody(BaseModel):
     context: str
     question: str
+    model: str
+    api_key: str
 
 @traceable
 @app.post("/send_answer")
-async def send_answer(body: RequestBody,api_key: str = Depends(get_api_key)):
+async def send_answer(body: RequestBody):
     try:
         print("\n=== Starting Processing ===")
         print(f"Question received: {body.question}")
+        print(f"Model selected: {body.model}")
         print(f"Context length: {len(body.context)} characters")
+        
+        # Initialize the appropriate LLM based on the selected model
+        if body.model == "openai":
+            llm = ChatOpenAI(
+                model_name="gpt-4o",
+                temperature=0.7,
+                api_key=body.api_key
+            )
+            embeddings = OpenAIEmbeddings(api_key=body.api_key)
+        elif body.model == "claude":
+            llm = ChatAnthropic(
+                model_name="claude-3-sonnet-20240229",
+                temperature=0.7,
+                anthropic_api_key=body.api_key
+            )
+            # Claude doesn't have embeddings, so we'll use OpenAI embeddings
+            embeddings = OpenAIEmbeddings(api_key=os.getenv('OPENAI_API_KEY'))
+        elif body.model == "gemini":
+            llm = ChatGoogleGenerativeAI(
+                model="gemini-1.5-pro",
+                temperature=0.7,
+                google_api_key=body.api_key
+            )
+            # Gemini doesn't have embeddings, so we'll use OpenAI embeddings
+            embeddings = OpenAIEmbeddings(api_key=os.getenv('OPENAI_API_KEY'))
+        else:
+            raise ValueError(f"Unsupported model: {body.model}")
+        
+        # Create the chain using RunnableSequence
+        chain = prompt_template | llm
         
         # Split the context into chunks
         chunks = text_splitter.split_text(body.context)
