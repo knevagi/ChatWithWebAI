@@ -4,6 +4,27 @@ const userInput = document.getElementById("userInput");
 const sendButton = document.getElementById("sendBtn");
 const settingsButton = document.getElementById("settingsBtn");
 
+// Initialize markdown-it
+let md;
+function initMarkdown() {
+  if (window.markdownit) {
+    md = window.markdownit({
+      html: false,
+      linkify: true,
+      typographer: true
+    });
+  } else {
+    console.error('Markdown-it library not loaded');
+  }
+}
+
+// Initialize markdown-it when the library is loaded
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initMarkdown);
+} else {
+  initMarkdown();
+}
+
 // Handle settings button click
 settingsButton.addEventListener("click", () => {
   window.location.href = "settings.html";
@@ -13,9 +34,29 @@ settingsButton.addEventListener("click", () => {
 function addMessage(text, isUser = false) {
   const messageDiv = document.createElement("div");
   messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
-  messageDiv.textContent = text;
+  
+  if (isUser) {
+    messageDiv.textContent = text;
+  } else {
+    if (md) {
+      messageDiv.innerHTML = md.render(text);
+    } else {
+      messageDiv.textContent = text;
+    }
+  }
+  
   messagesContainer.appendChild(messageDiv);
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+// Add loading animation
+function addLoadingAnimation() {
+  const loadingDiv = document.createElement("div");
+  loadingDiv.className = "loading-dots";
+  loadingDiv.innerHTML = "<span></span><span></span><span></span>";
+  messagesContainer.appendChild(loadingDiv);
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  return loadingDiv;
 }
 
 // Handle send button click
@@ -23,9 +64,16 @@ sendButton.addEventListener("click", async () => {
   const userQuestion = userInput.value.trim();
   if (!userQuestion) return;
 
+  // Disable input and button while processing
+  userInput.disabled = true;
+  sendButton.disabled = true;
+
   // Add user message to chat
   addMessage(userQuestion, true);
   userInput.value = "";
+
+  // Add loading animation
+  const loadingDiv = addLoadingAnimation();
 
   try {
     // Get current tab
@@ -51,6 +99,9 @@ sendButton.addEventListener("click", async () => {
 
       console.log("Backend response:", backendResponse);
 
+      // Remove loading animation
+      loadingDiv.remove();
+
       if (backendResponse && backendResponse.answer) {
         addMessage(backendResponse.answer);
       } else if (backendResponse && backendResponse.error) {
@@ -59,11 +110,20 @@ sendButton.addEventListener("click", async () => {
         addMessage("Sorry, I couldn't get a response from the AI. Please try again.");
       }
     } else {
+      // Remove loading animation
+      loadingDiv.remove();
       addMessage("Sorry, I couldn't read the page content. Please try again.");
     }
   } catch (error) {
     console.error("Error:", error);
+    // Remove loading animation
+    loadingDiv.remove();
     addMessage("Sorry, something went wrong. Please try again.");
+  } finally {
+    // Re-enable input and button
+    userInput.disabled = false;
+    sendButton.disabled = false;
+    userInput.focus();
   }
 });
 

@@ -81,6 +81,60 @@ body {
   line-height: 1.5;
 }
 
+.message p {
+  margin: 0 0 8px 0;
+}
+
+.message p:last-child {
+  margin-bottom: 0;
+}
+
+.message code {
+  background-color: rgba(0, 0, 0, 0.1);
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.9em;
+}
+
+.message pre {
+  background-color: rgba(0, 0, 0, 0.1);
+  padding: 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+
+.message pre code {
+  background-color: transparent;
+  padding: 0;
+  font-size: 0.9em;
+}
+
+.message ul, .message ol {
+  margin: 8px 0;
+  padding-left: 24px;
+}
+
+.message li {
+  margin: 4px 0;
+}
+
+.message strong {
+  font-weight: 600;
+}
+
+.message em {
+  font-style: italic;
+}
+
+.message blockquote {
+  border-left: 3px solid rgba(0, 0, 0, 0.2);
+  margin: 8px 0;
+  padding-left: 12px;
+  color: rgba(0, 0, 0, 0.7);
+}
+
 .user-message {
   background-color: #2563eb;
   color: white;
@@ -315,4 +369,41 @@ body {
 
 .model-select:hover {
   border-color: #2563eb;
+}
+
+.loading-dots {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 16px;
+  background-color: #f3f4f6;
+  border-radius: 12px;
+  border-bottom-left-radius: 4px;
+  align-self: flex-start;
+}
+
+.loading-dots span {
+  width: 8px;
+  height: 8px;
+  background-color: #6b7280;
+  border-radius: 50%;
+  display: inline-block;
+  animation: bounce 1.4s infinite ease-in-out;
+}
+
+.loading-dots span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.loading-dots span:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes bounce {
+  0%, 80%, 100% { 
+    transform: scale(0);
+  } 
+  40% { 
+    transform: scale(1.0);
+  }
 } 
