@@ -21,8 +21,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         model: result.selectedModel,
         api_key: apiKey
       });
-      
-      fetch("http://172.19.96.1:8000/send_answer", {
+      console.log(bodyparam)
+      fetch("https://chatwithwebai.onrender.com/send_answer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: bodyparam
@@ -33,6 +33,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         sendResponse({ answer: data.answer });
       })
       .catch(error => {
+        console.log(error)
         console.error("Error:", error);
         sendResponse({ error: "Failed to get response from backend" });
       });
