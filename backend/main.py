@@ -3,16 +3,17 @@ from fastapi.middleware.cors import CORSMiddleware
 import os
 from pydantic import BaseModel
 from openai import OpenAI
-from typing import List, Optional
+from typing import List, Optional, Dict
 from dotenv import load_dotenv
 from langsmith import traceable
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_anthropic import ChatAnthropic
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain.prompts import ChatPromptTemplate
+from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import FAISS
 from langchain.schema import Document
+from langchain.schema.messages import SystemMessage, HumanMessage, AIMessage
 
 app = FastAPI()
 load_dotenv()
@@ -26,12 +27,18 @@ os.environ["LANGCHAIN_TRACING_V2"] = "true"
 os.environ["LANGCHAIN_API_KEY"] = os.getenv('LANGSMITH_API_KEY')
 os.environ["LANGCHAIN_PROJECT"] = "AIWEBCHAT"
 
-# Create a prompt template
+# Updated prompt template to include history
 prompt_template = ChatPromptTemplate.from_messages([
-    ("system", """You are a helpful AI assistant that answers questions based on the provided context.
-    If the answer cannot be found in the context, say so. Do not make up information.
-    Keep your answers concise and relevant to the question."""),
-    ("human", "Context: {context}\n\nQuestion: {question}")
+    ("system", """You are a helpful AI assistant. You answer questions based on the provided context and chat history.
+    If the answer cannot be found in the context or history, say so. Do not make up information.
+    Keep your answers concise and relevant to the question.
+    
+    Use the following pieces of retrieved context to answer the question. 
+    --- 
+    Context: {context}
+    ---"""),
+    MessagesPlaceholder(variable_name="history"),
+    ("human", "Question: {question}")
 ])
 
 # Initialize text splitter
@@ -46,6 +53,18 @@ class RequestBody(BaseModel):
     question: str
     model: str
     api_key: str
+    history: Optional[List[Dict[str, str]]] = None # Added history field
+
+# Helper function to convert history dicts to LangChain message objects
+def format_history(history: List[Dict[str, str]]):
+    messages = []
+    if history:
+        for msg in history:
+            if msg.get('role') == 'user':
+                messages.append(HumanMessage(content=msg.get('content', '')))
+            elif msg.get('role') == 'ai':
+                messages.append(AIMessage(content=msg.get('content', '')))
+    return messages
 
 @traceable
 @app.post("/send_answer")
@@ -55,6 +74,7 @@ async def send_answer(body: RequestBody):
         print(f"Question received: {body.question}")
         print(f"Model selected: {body.model}")
         print(f"Context length: {len(body.context)} characters")
+        print(f"History received: {len(body.history) if body.history else 0} messages")
         
         # Initialize the appropriate LLM based on the selected model
         if body.model == "openai":
@@ -115,17 +135,24 @@ async def send_answer(body: RequestBody):
         relevant_context = "\n\n".join([doc.page_content for doc in relevant_docs])
         print(f"\nCombined context length: {len(relevant_context)} characters")
         
-        # Process the context and question using the chain
+        # Format history for LangChain
+        formatted_history = format_history(body.history)
+        
+        # Process the context, history, and question using the chain
         print("\nSending to LLM...")
         response = chain.invoke({
             "context": relevant_context,
-            "question": body.question
+            "question": body.question,
+            "history": formatted_history # Pass formatted history
         })
         print(f"LLM Response: {response.content}")
         
         return {"answer": response.content}
     except Exception as e:
         print(f"\nError occurred: {str(e)}")
+        # Consider logging the full traceback for better debugging
+        # import traceback
+        # print(traceback.format_exc())
         return {"error": str(e)}
 
 if __name__ == "__main__":
