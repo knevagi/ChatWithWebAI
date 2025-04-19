@@ -1,6 +1,6 @@
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "ASK_BACKEND") {
-    const { question, context } = message;
+    const { question, context, history } = message;
     
     // Get settings from storage
     chrome.storage.sync.get(['selectedModel', 'openaiApiKey', 'claudeApiKey', 'geminiApiKey'], (result) => {
@@ -19,9 +19,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         context: context,
         question: question,
         model: result.selectedModel,
-        api_key: apiKey
+        api_key: apiKey,
+        history: history
       });
-      console.log(bodyparam)
+      console.log("Sending to backend:", bodyparam)
       fetch("https://chatwithwebai.onrender.com/send_answer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

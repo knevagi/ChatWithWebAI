@@ -4,6 +4,9 @@ const userInput = document.getElementById("userInput");
 const sendButton = document.getElementById("sendBtn");
 const settingsButton = document.getElementById("settingsBtn");
 
+// Chat History
+let chatHistory = [];
+
 // Initialize markdown-it
 let md;
 function initMarkdown() {
@@ -32,6 +35,9 @@ settingsButton.addEventListener("click", () => {
 
 // Add message to chat
 function addMessage(text, isUser = false) {
+  // Add to history
+  chatHistory.push({ role: isUser ? 'user' : 'ai', content: text });
+  
   const messageDiv = document.createElement("div");
   messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
   
@@ -68,7 +74,7 @@ sendButton.addEventListener("click", async () => {
   userInput.disabled = true;
   sendButton.disabled = true;
 
-  // Add user message to chat
+  // Add user message to chat (this also adds it to history)
   addMessage(userQuestion, true);
   userInput.value = "";
 
@@ -91,7 +97,8 @@ sendButton.addEventListener("click", async () => {
           { 
             type: "ASK_BACKEND", 
             question: userQuestion, 
-            context: response.pageText 
+            context: response.pageText, 
+            history: chatHistory.slice(0, -1) // Send history *before* the current question
           },
           resolve
         );
@@ -103,9 +110,9 @@ sendButton.addEventListener("click", async () => {
       loadingDiv.remove();
 
       if (backendResponse && backendResponse.answer) {
-        addMessage(backendResponse.answer);
+        addMessage(backendResponse.answer); // Add AI response to chat and history
       } else if (backendResponse && backendResponse.error) {
-        addMessage(backendResponse.error);
+        addMessage(backendResponse.error); // Add error message (but maybe not to history?)
       } else {
         addMessage("Sorry, I couldn't get a response from the AI. Please try again.");
       }
